@@ -53,6 +53,29 @@ static char *saft_program_names[NB_SAFT_PROGRAMS] =
   [TSAFTX] = "tsaftx",
 };
 
+typedef enum
+{
+  D2 = 0,
+  D2AST,
+  D2C,
+  D2DAG,
+  D2W,
+  D2WC,
+  NB_SAFT_STATISTICS,
+  SAFT_UNKNOWN_STATISTIC
+}
+SaftStatisticType;
+
+static char *saft_statistic_names[NB_SAFT_STATISTICS] =
+{
+  [D2]     = "d2",
+  [D2AST]  = "d2ast",
+  [D2C]    = "d2c",
+  [D2DAG]  = "d2dag",
+  [D2W]    = "d2w",
+  [D2WC]   = "d2wc",
+};
+
 typedef struct _SaftOptDesc SaftOptDesc;
 
 struct _SaftOptDesc
@@ -67,14 +90,15 @@ typedef struct _SaftOptions SaftOptions;
 
 struct _SaftOptions
 {
-  char           *input_path;
-  char           *db_path;
-  char           *output_path;
-  double          p_max;
-  unsigned int    word_size;
-  unsigned int    verbosity;
-  int             show_max;
-  SaftProgramType program;
+  char             *input_path;
+  char             *db_path;
+  char             *output_path;
+  double            p_max;
+  unsigned int      word_size;
+  unsigned int      verbosity;
+  int               show_max;
+  SaftProgramType   program;
+  SaftStatisticType statistic;
 };
 
 static SaftOptions* saft_options_new  (void);
@@ -95,6 +119,7 @@ static SaftOptDesc opt_desc[] =
     {"output",   required_argument, 'o', "Path to the output file"},
     /* Search setup */
     {"program",  required_argument, 'p', "Program to use"},
+    {"statistic",required_argument, 's', "Statistic to use (default d2)"},
     {"wordsize", required_argument, 'w', "Word size"},
     {"showmax",  required_argument, 'b', "Maximum number of results to show"},
     {"pmax",     required_argument, 'e', "Show results with a p-value smaller than this"},
@@ -103,21 +128,23 @@ static SaftOptDesc opt_desc[] =
     {NULL, 0, 0, NULL}
 };
 
-static struct option*   saft_main_get_options  (void);
+static struct option*     saft_main_get_options    (void);
 
-static void             saft_main_usage        (char        *argv0);
+static void               saft_main_usage          (char        *argv0);
 
-static void             saft_main_help         (char        *argv0);
+static void               saft_main_help           (char        *argv0);
 
-static void             saft_main_version      (void);
+static void               saft_main_version        (void);
 
-static SaftProgramType  saft_main_program_type (char        *program);
+static SaftProgramType    saft_main_program_type   (char        *program);
 
-static int              saft_main_search       (SaftOptions *options);
+static SaftStatisticType  saft_main_statistic_type (char        *statistic);
 
-static void             saft_main_write_search (SaftOptions *options,
-                                                SaftSearch  *search,
-                                                FILE        *stream);
+static int                saft_main_search         (SaftOptions *options);
+
+static void               saft_main_write_search   (SaftOptions *options,
+                                                    SaftSearch  *search,
+                                                    FILE        *stream);
 
 int
 main (int    argc,
@@ -135,7 +162,7 @@ main (int    argc,
 
       c = getopt_long (argc,
                        argv,
-                       "hV" "v" "i:d:o:" "p:w:b:e:",
+                       "hV" "v" "i:d:o:" "p:s:w:b:e:",
                        long_options,
                        &option_index);
       if (c == -1)
@@ -167,6 +194,15 @@ main (int    argc,
                 {
                   ret = 1;
                   saft_error ("Wrong `--program (-p)' argument: unknown program `%s'", optarg);
+                  goto cleanup;
+                }
+              break;
+          case 's':
+              options->statistic = saft_main_statistic_type (optarg);
+              if (options->statistic == SAFT_UNKNOWN_STATISTIC)
+                {
+                  ret = 1;
+                  saft_error ("Wrong `--statistic (-s)' argument: unknown statistic `%s'", optarg);
                   goto cleanup;
                 }
               break;
@@ -279,7 +315,7 @@ saft_main_help (char *argv0)
 
   for (i = 0; opt_desc[i].name; i++)
     printf ("  --%-*s (-%c) : %s\n",
-            longest,
+            (int) longest,
             opt_desc[i].name,
             opt_desc[i].val,
             opt_desc[i].description);
@@ -301,6 +337,16 @@ saft_main_program_type (char *program)
   return SAFT_UNKNOWN_PROGRAM;
 }
 
+static SaftStatisticType
+saft_main_statistic_type (char *statistic)
+{
+  unsigned int i;
+  for (i = 0; i < NB_SAFT_STATISTICS; i++)
+    if (!strcmp (statistic, saft_statistic_names[i]))
+      return i;
+  return SAFT_UNKNOWN_STATISTIC;
+}
+
 static SaftOptions*
 saft_options_new ()
 {
@@ -315,6 +361,7 @@ saft_options_new ()
   options->verbosity   = 0;
   options->show_max    = 50;
   options->program     = SAFT_UNKNOWN_PROGRAM;
+  options->statistic   = D2;
 
   return options;
 }
