@@ -44,35 +44,35 @@ struct _SaftStatsContext
   unsigned int unif: 1;
 };
 
-SaftStatsContext* saft_stats_context_new  (unsigned int      word_size,
-                                           double           *letters_frequencies,
-                                           unsigned int      n_letters);
+SaftStatsContext* saft_stats_context_new_d2 (unsigned int      word_size,
+                                             double           *letters_frequencies,
+                                             unsigned int      n_letters);
 
-void              saft_stats_context_free (SaftStatsContext *context);
+void              saft_stats_context_free   (SaftStatsContext *context);
 
-double            saft_stats_mean         (SaftStatsContext *context,
-                                           unsigned int      query_size,
-                                           unsigned int      subject_size);
+double            saft_stats_mean           (SaftStatsContext *context,
+                                             unsigned int      query_size,
+                                             unsigned int      subject_size);
 
-double            saft_stats_var          (SaftStatsContext *context,
-                                           unsigned int      query_size,
-                                           unsigned int      subject_size);
+double            saft_stats_var            (SaftStatsContext *context,
+                                             unsigned int      query_size,
+                                             unsigned int      subject_size);
 
-double            saft_stats_pgamma_m_v   (double            d2,
-                                           double            mean,
-                                           double            var);
+double            saft_stats_pgamma_m_v     (double            d2,
+                                             double            mean,
+                                             double            var);
 
-double            saft_stats_pgamma       (double            d2,
-                                           double            shape,
-                                           double            scale);
+double            saft_stats_pgamma         (double            d2,
+                                             double            shape,
+                                             double            scale);
 
-double*           saft_stats_BH_array     (double           *p_values,
-                                           unsigned int      n_p_values);
+double*           saft_stats_BH_array       (double           *p_values,
+                                             unsigned int      n_p_values);
 
-double            saft_stats_BH_element   (double            p_value,
-                                           double            p_previous,
-                                           unsigned int      index,
-                                           unsigned int      n_p_values);
+double            saft_stats_BH_element     (double            p_value,
+                                             double            p_previous,
+                                             unsigned int      index,
+                                             unsigned int      n_p_values);
 
 #ifdef __cplusplus
 }

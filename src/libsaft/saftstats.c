@@ -31,6 +31,7 @@ static double saft_stats_sum_freq_pow (double      *f,
                                        unsigned int freq_pow,
                                        unsigned int sum_pow);
 
+#define p(freq_pow, sum_pow) saft_stats_sum_freq_pow(letters_frequencies, n_letters, freq_pow, sum_pow)
 
 /* FIXME There's quite a bit of optimisation and checking for numeric stability
  * that could be done here */
@@ -39,8 +40,6 @@ saft_stats_context_new (unsigned int word_size,
                         double      *letters_frequencies,
                         unsigned int n_letters)
 {
-#define p(freq_pow, sum_pow) saft_stats_sum_freq_pow(letters_frequencies, n_letters, freq_pow, sum_pow)
-
   SaftStatsContext *context;
   int               k = word_size;
   unsigned int      i;

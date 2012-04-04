@@ -53,11 +53,11 @@ main (int    argc,
     {
       SaftSequence *s1     = saft_fasta_to_seq (seqs[0], &SaftAlphabetDNA);
       SaftSequence *s2     = saft_fasta_to_seq (seqs[1], &SaftAlphabetDNA);
-      SaftSearch   *search = saft_search_new (s1, word_size, SAFT_FREQ_UNIFORM, NULL);
+      SaftSearch   *search = saft_search_new (s1, SAFT_D2, word_size, SAFT_FREQ_UNIFORM, NULL);
 
       saft_search_add_subject (search, s2);
       saft_search_compute_pvalues (search);
-      printf ("D2 = %d ; p-value = %.5e\n", search->results->d2, search->results->p_value);
+      printf ("D2 = %d ; p-value = %.5e\n", search->results->s_value, search->results->p_value);
 
       saft_sequence_free (s2);
       saft_search_free (search);

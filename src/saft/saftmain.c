@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "saftstatistictype.h"
 #include "safterror.h"
 #include "saftfasta.h"
 #include "saftsearch.h"
@@ -51,29 +52,6 @@ static char *saft_program_names[NB_SAFT_PROGRAMS] =
   [SAFTX]  = "saftx",
   [TSAFTN] = "tsaftn",
   [TSAFTX] = "tsaftx",
-};
-
-typedef enum
-{
-  D2 = 0,
-  D2AST,
-  D2C,
-  D2DAG,
-  D2W,
-  D2WC,
-  NB_SAFT_STATISTICS,
-  SAFT_UNKNOWN_STATISTIC
-}
-SaftStatisticType;
-
-static char *saft_statistic_names[NB_SAFT_STATISTICS] =
-{
-  [D2]     = "d2",
-  [D2AST]  = "d2ast",
-  [D2C]    = "d2c",
-  [D2DAG]  = "d2dag",
-  [D2W]    = "d2w",
-  [D2WC]   = "d2wc",
 };
 
 typedef struct _SaftOptDesc SaftOptDesc;
@@ -361,7 +339,7 @@ saft_options_new ()
   options->verbosity   = 0;
   options->show_max    = 50;
   options->program     = SAFT_UNKNOWN_PROGRAM;
-  options->statistic   = D2;
+  options->statistic   = SAFT_D2;
 
   return options;
 }
@@ -417,6 +395,7 @@ saft_main_search (SaftOptions *options)
       SaftSequence *query  = saft_fasta_to_seq (fasta_queries[i],
                                                 alphabet);
       SaftSearch   *search = saft_search_new (query,
+                                              options->statistic,
                                               options->word_size,
                                               SAFT_FREQ_UNIFORM,
                                               NULL);
@@ -458,9 +437,10 @@ saft_main_write_search (SaftOptions *options,
        search->sorted_results[i]->p_value_adj <= options->p_max;
        i++)
     {
-      fprintf (stream, "  Hit: %s D2: %d adj.p.val: %.5e p.val: %.5e\n",
+      fprintf (stream, "  Hit: %s %s: %d adj.p.val: %.5e p.val: %.5e\n",
                search->sorted_results[i]->name,
-               search->sorted_results[i]->d2,
+               saft_statistic_names[search->statistic],
+               search->sorted_results[i]->s_value,
                search->sorted_results[i]->p_value_adj,
                search->sorted_results[i]->p_value);
     }

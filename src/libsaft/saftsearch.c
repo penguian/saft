@@ -47,7 +47,7 @@ saft_result_new ()
   result               = malloc (sizeof (*result));
   result->next         = NULL;
   result->name         = NULL;
-  result->d2           = 0;
+  result->s_value           = 0;
   result->subject_size = 0;
   result->p_value      = 1;
   result->p_value_adj  = 1;
@@ -73,6 +73,7 @@ saft_result_free (SaftResult *result)
 
 SaftSearch*
 saft_search_new (SaftSequence *query,
+                 SaftStatisticType statistic,
                  unsigned int  word_size,
                  SaftFreqType  freq_type,
                  const double *letters_frequencies)
@@ -81,6 +82,7 @@ saft_search_new (SaftSequence *query,
 
   search                      = malloc (sizeof (*search));
   search->query               = query;
+  search->statistic           = statistic;
   search->word_size           = word_size;
   search->freq_type           = freq_type;
   search->htable              = saft_htable_new (query->alphabet, search->word_size);
@@ -153,13 +155,20 @@ saft_search_add_subject (SaftSearch   *search,
 
   saft_htable_add_subject (search->htable, subject);
   result               = saft_result_new ();
-  result->d2           = saft_htable_d2 (search->htable);
   result->name         = strdup (subject->name);
   result->subject_size = subject->size;
   result->next         = search->results;
   search->results      = result;
   search->n_results++;
 
+  switch (search->statistic)
+  {
+    case SAFT_D2:  
+      result->s_value      = saft_htable_d2 (search->htable);
+      break;
+    default:  
+      result->s_value      = 0;
+  }
   if (search->freq_type == SAFT_FREQ_SUBJECTS ||
       search->freq_type == SAFT_FREQ_QUERY_SUBJECTS)
     {
@@ -195,9 +204,18 @@ saft_search_compute_pvalues (SaftSearch *search)
         search->letters_frequencies[i] = ((double)search->letters_counts[i]) / total;
     }
 
-  context = saft_stats_context_new (search->word_size,
-                                    search->letters_frequencies,
-                                    search->query->alphabet->size);
+  switch (search->statistic)
+  {
+    case SAFT_D2:
+      context = saft_stats_context_new (search->word_size,
+                                        search->letters_frequencies,
+                                        search->query->alphabet->size);
+      break;
+    default:
+      saft_error ("Statistic not implemented: `%s'", saft_statistic_names[search->statistic]);
+      exit(1);
+      break;
+  }
 
   for (result = search->results; result; result = result->next)
     {
@@ -207,7 +225,7 @@ saft_search_compute_pvalues (SaftSearch *search)
       const double var  = saft_stats_var  (context,
                                            search->query->size,
                                            result->subject_size);
-      result->p_value   = saft_stats_pgamma_m_v (result->d2, mean, var);
+      result->p_value   = saft_stats_pgamma_m_v (result->s_value, mean, var);
     }
 
   saft_search_adjust_pvalues (search);

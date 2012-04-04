@@ -24,6 +24,7 @@
 
 
 #include <safthash.h>
+#include <saftstatistictype.h>
 
 
 #ifdef __cplusplus
@@ -41,7 +42,7 @@ struct _SaftResult
 {
   SaftResult  *next;
   char        *name;
-  unsigned int d2;
+  unsigned int s_value;
   unsigned int subject_size;
   double       p_value;
   double       p_value_adj;
@@ -69,28 +70,30 @@ typedef struct _SaftSearch SaftSearch;
 
 struct _SaftSearch
 {
-  SaftSequence  *query;
-  SaftHTable    *htable;
-  double        *letters_frequencies;
-  unsigned int  *letters_counts;
-  SaftResult    *results;
-  SaftResult   **sorted_results;
-  unsigned int   word_size;
-  unsigned int   n_results;
-  SaftFreqType   freq_type;
+  SaftSequence     *query;
+  SaftHTable       *htable;
+  SaftStatisticType statistic;
+  double           *letters_frequencies;
+  unsigned int     *letters_counts;
+  SaftResult       *results;
+  SaftResult      **sorted_results;
+  unsigned int      word_size;
+  unsigned int      n_results;
+  SaftFreqType      freq_type;
 };
 
-SaftSearch* saft_search_new             (SaftSequence *query,
-                                         unsigned int  word_size,
-                                         SaftFreqType  freq_type,
-                                         const double *letters_frequencies);
+SaftSearch* saft_search_new             (SaftSequence     *query,
+                                         SaftStatisticType statistic,
+                                         unsigned int      word_size,
+                                         SaftFreqType      freq_type,
+                                         const double     *letters_frequencies);
 
-void        saft_search_free            (SaftSearch   *search);
+void        saft_search_free            (SaftSearch       *search);
 
-void        saft_search_add_subject     (SaftSearch   *search,
-                                         SaftSequence *subject);
+void        saft_search_add_subject     (SaftSearch       *search,
+                                         SaftSequence     *subject);
 
-void        saft_search_compute_pvalues (SaftSearch   *search);
+void        saft_search_compute_pvalues (SaftSearch       *search);
 
 #ifdef __cplusplus
 }
