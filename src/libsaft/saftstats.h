@@ -44,7 +44,7 @@ struct _SaftStatsContext
   unsigned int unif: 1;
 };
 
-SaftStatsContext* saft_stats_context_new_d2 (unsigned int      word_size,
+SaftStatsContext* saft_stats_context_new    (unsigned int      word_size,
                                              double           *letters_frequencies,
                                              unsigned int      n_letters);
 
@@ -58,11 +58,11 @@ double            saft_stats_var            (SaftStatsContext *context,
                                              unsigned int      query_size,
                                              unsigned int      subject_size);
 
-double            saft_stats_pgamma_m_v     (double            d2,
+double            saft_stats_pgamma_m_v     (double            s_value,
                                              double            mean,
                                              double            var);
 
-double            saft_stats_pgamma         (double            d2,
+double            saft_stats_pgamma         (double            s_value,
                                              double            shape,
                                              double            scale);
 

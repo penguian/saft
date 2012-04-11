@@ -118,7 +118,7 @@ saft_htable_add_query (SaftHTable   *table,
 
       start = segment->seq - 1;
       for (i = 1; i < table->word_size; i++)
-        hash = (hash << table->shift) | *++start;
+        hash = (hash << table->shift) ^ *++start;
 
       start = segment->seq;
       i     = table->word_size - 1;
@@ -127,7 +127,7 @@ saft_htable_add_query (SaftHTable   *table,
           SaftHNode *node;
 
           hash <<= table->shift;
-          hash  |= segment->seq[i];
+          hash  ^= segment->seq[i];
           hash  &= table->hmask;
           idx    = hash % SAFT_HTABLE_SIZE;
 
@@ -167,7 +167,7 @@ saft_htable_add_subject (SaftHTable   *table,
 
       start = segment->seq - 1;
       for (i = 1; i < table->word_size; i++)
-        hash = (hash << table->shift) | *++start;
+        hash = (hash << table->shift) ^ *++start;
 
       start = segment->seq;
       i     = table->word_size - 1;
@@ -176,7 +176,7 @@ saft_htable_add_subject (SaftHTable   *table,
           SaftHNode *node;
 
           hash <<= table->shift;
-          hash  |= segment->seq[i];
+          hash  ^= segment->seq[i];
           hash  &= table->hmask;
           idx    = hash % SAFT_HTABLE_SIZE;
 
@@ -214,7 +214,7 @@ saft_htable_hash (SaftHTable *table,
   unsigned int i;
 
   for (i = 1; i < table->word_size; i++)
-    ret = (ret << table->shift) | *++start;
+    ret = (ret << table->shift) ^ *++start;
 
   return ret % SAFT_HTABLE_SIZE;
 }
@@ -238,7 +238,7 @@ saft_htable_cmp (SaftHTable *table,
   return 1;
 }
 
-unsigned int
+double
 saft_htable_d2 (SaftHTable *table)
 {
   unsigned int i;
@@ -252,6 +252,36 @@ saft_htable_d2 (SaftHTable *table)
     }
 
   return d2;
+}
+
+double
+saft_htable_d2dag (SaftHTable *table,
+                   double     *letters_frequencies)
+{
+  unsigned int i;
+  unsigned int j;
+  double d2dag = 0.0;
+
+  for (i = 0; i < table->size; i++)
+    {
+      SaftHNode   *node;
+      SaftLetter  *letter_ptr;
+      double pw = 1.0;
+      for (node = table->table[i]; node; node = node->next)
+      {
+        if (node->count_query * node->count_subject != 0)
+        {
+          letter_ptr = node->seq - 1;
+          // Is this the right mapping from letters stored in seq to 
+          // letter indices into letters_frequencies ?
+          for (j = 0; j < table->word_size; j++)
+            pw *= letters_frequencies[*++letter_ptr - 1]; 
+          d2dag += node->count_query * node->count_subject / pw;
+        }
+      }
+    }
+
+  return d2dag;
 }
 
 SaftHNode*

@@ -42,7 +42,7 @@ struct _SaftResult
 {
   SaftResult  *next;
   char        *name;
-  unsigned int s_value;
+  double       s_value;
   unsigned int subject_size;
   double       p_value;
   double       p_value_adj;
@@ -72,11 +72,11 @@ struct _SaftSearch
 {
   SaftSequence     *query;
   SaftHTable       *htable;
-  SaftStatisticType statistic;
   double           *letters_frequencies;
   unsigned int     *letters_counts;
   SaftResult       *results;
   SaftResult      **sorted_results;
+  SaftStatisticType statistic;
   unsigned int      word_size;
   unsigned int      n_results;
   SaftFreqType      freq_type;

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "safterror.h"
 #include "saftsearch.h"
@@ -147,6 +148,37 @@ saft_search_free (SaftSearch *search)
     }
 }
 
+
+void
+saft_search_compute_letters_counts_frequencies (SaftSearch   *search,
+                                                SaftSequence *subject)
+{
+  unsigned int      i;
+
+  if (search->freq_type == SAFT_FREQ_SUBJECTS ||
+      search->freq_type == SAFT_FREQ_QUERY_SUBJECTS)
+    {
+      SaftSegment *segment;
+
+      for (segment = subject->segments; segment; segment = segment->next)
+        {
+          for (i = 0; i < segment->size; i++)
+            /* (segment->seq[i] - 1) because there should not be any `0' letter
+             * left at this stage */
+            search->letters_counts[segment->seq[i] - 1]++;
+        }
+    }
+  if (search->freq_type != SAFT_FREQ_USER)
+    {
+      unsigned int total = 0;
+
+      for (i = 0; i < search->query->alphabet->size; i++)
+        total += search->letters_counts[i];
+      for (i = 0; i < search->query->alphabet->size; i++)
+        search->letters_frequencies[i] = ((double)search->letters_counts[i]) / total;
+    }
+}
+
 void
 saft_search_add_subject (SaftSearch   *search,
                          SaftSequence *subject)
@@ -160,62 +192,38 @@ saft_search_add_subject (SaftSearch   *search,
   result->next         = search->results;
   search->results      = result;
   search->n_results++;
+  saft_search_compute_letters_counts_frequencies (search, subject);
 
   switch (search->statistic)
-  {
+    {
     case SAFT_D2:  
       result->s_value      = saft_htable_d2 (search->htable);
       break;
+    case SAFT_D2AST:
+      ;
+      double d2dag         = saft_htable_d2dag (search->htable, search->letters_frequencies);
+      double nA            = search->query->size;
+      double nB            = subject->size;
+      result->s_value      = (d2dag - nA * nB) / sqrt(nA * nB);
+      break;
+    case SAFT_D2DAG:  
+      result->s_value      = saft_htable_d2dag (search->htable, search->letters_frequencies);
+      break;
     default:  
       result->s_value      = 0;
-  }
-  if (search->freq_type == SAFT_FREQ_SUBJECTS ||
-      search->freq_type == SAFT_FREQ_QUERY_SUBJECTS)
-    {
-      SaftSegment *segment;
-
-      for (segment = subject->segments; segment; segment = segment->next)
-        {
-          unsigned int i;
-
-          for (i = 0; i < segment->size; i++)
-            /* (segment->seq[i] - 1) because there should not be any `0' letter
-             * left at this stage */
-            search->letters_counts[segment->seq[i] - 1]++;
-        }
     }
+
   saft_htable_clear_subject (search->htable);
 }
 
 void
-saft_search_compute_pvalues (SaftSearch *search)
+saft_search_compute_pvalues_d2 (SaftSearch *search)
 {
   SaftStatsContext *context;
   SaftResult       *result;
-  unsigned int      i;
-
-  if (search->freq_type != SAFT_FREQ_USER)
-    {
-      unsigned int total = 0;
-
-      for (i = 0; i < search->query->alphabet->size; i++)
-        total += search->letters_counts[i];
-      for (i = 0; i < search->query->alphabet->size; i++)
-        search->letters_frequencies[i] = ((double)search->letters_counts[i]) / total;
-    }
-
-  switch (search->statistic)
-  {
-    case SAFT_D2:
-      context = saft_stats_context_new (search->word_size,
-                                        search->letters_frequencies,
-                                        search->query->alphabet->size);
-      break;
-    default:
-      saft_error ("Statistic not implemented: `%s'", saft_statistic_names[search->statistic]);
-      exit(1);
-      break;
-  }
+  context = saft_stats_context_new (search->word_size,
+                                    search->letters_frequencies,
+                                    search->query->alphabet->size);
 
   for (result = search->results; result; result = result->next)
     {
@@ -226,6 +234,61 @@ saft_search_compute_pvalues (SaftSearch *search)
                                            search->query->size,
                                            result->subject_size);
       result->p_value   = saft_stats_pgamma_m_v (result->s_value, mean, var);
+    }
+
+  saft_stats_context_free (context);
+}
+
+#define var_d2ast(d,k) ( pow(d,k) + 1.0 - 2.0 * k + 2.0 * d * (pow(d,k-1) -1) / (d - 1) )
+
+void
+saft_search_compute_pvalues_d2ast (SaftSearch *search)
+{
+  const double d  = search->query->alphabet->size;
+  const double k  = search->word_size;
+  SaftResult       *result;
+
+  for (result = search->results; result; result = result->next)
+      result->p_value   = saft_stats_pgamma_m_v (result->s_value, 0.0, var_d2ast(d,k));
+}
+
+void
+saft_search_compute_pvalues_d2dag (SaftSearch *search)
+{
+  const double d  = search->query->alphabet->size;
+  const double k  = search->word_size;
+  const double nA = search->query->size;
+  SaftResult       *result;
+
+  for (result = search->results; result; result = result->next)
+    {
+      const double nB = result->subject_size; 
+      const double mean = nA * nB;
+      const double var  = mean * var_d2ast(d,k);
+      result->p_value   = saft_stats_pgamma_m_v (result->s_value, mean, var);
+    }
+}
+
+#undef var_d2ast
+
+void
+saft_search_compute_pvalues (SaftSearch *search)
+{
+  switch (search->statistic)
+    {
+    case SAFT_D2:
+      saft_search_compute_pvalues_d2 (search);
+      break;
+    case SAFT_D2AST:
+      saft_search_compute_pvalues_d2ast (search);
+      break;
+    case SAFT_D2DAG:
+      saft_search_compute_pvalues_d2dag (search);
+      break;
+    default:
+      saft_error ("Statistic not implemented: `%s'", saft_statistic_names[search->statistic]);
+      exit(1);
+      break;
     }
 
   saft_search_adjust_pvalues (search);

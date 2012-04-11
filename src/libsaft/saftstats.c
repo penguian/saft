@@ -127,8 +127,9 @@ saft_stats_context_new (unsigned int word_size,
 
   return context;
 
-#undef p
 }
+
+#undef p
 
 void
 saft_stats_context_free (SaftStatsContext *context)
@@ -190,22 +191,22 @@ saft_stats_sum_freq_pow (double      *f,
 }
 
 double
-saft_stats_pgamma_m_v (double d2,
+saft_stats_pgamma_m_v (double s_value,
                        double mean,
                        double var)
 {
   const double scale = var / mean;
   const double shape = mean / scale;
 
-  return saft_stats_pgamma (d2, shape, scale);
+  return saft_stats_pgamma (s_value, shape, scale);
 }
 
 double
-saft_stats_pgamma (double d2,
+saft_stats_pgamma (double s_value,
                    double shape,
                    double scale)
 {
-  return gsl_cdf_gamma_Q (d2, shape, scale);
+  return gsl_cdf_gamma_Q (s_value, shape, scale);
 }
 
 /**
