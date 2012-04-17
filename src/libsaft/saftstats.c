@@ -147,6 +147,28 @@ saft_stats_mean (SaftStatsContext *context,
 }
 
 double
+saft_stats_var_d2c (SaftStatsContext *context,
+                    unsigned int      query_size,
+                    unsigned int      subject_size)
+{
+  int    m = query_size;
+  int    n = subject_size;
+  int    k = context->word_size;
+
+  const double sum_var_Yu = context->sum_var_Yu;
+  const double cov_crab   = (- 4 * k + 2) * context->cov_crab;
+
+  if (context->word_size == 1)
+    return m * n * (sum_var_Yu + cov_crab);
+
+  const double cov_diag = context->cov_diag;
+  const double cov_ac1  = context->cov_ac1;
+  const double cov_ac2  = context->cov_ac2;
+
+  return m * n * (sum_var_Yu + cov_crab + cov_diag + cov_ac1 + cov_ac2);
+}
+
+double
 saft_stats_var (SaftStatsContext *context,
                 unsigned int      query_size,
                 unsigned int      subject_size)

@@ -54,6 +54,10 @@ double            saft_stats_mean           (SaftStatsContext *context,
                                              unsigned int      query_size,
                                              unsigned int      subject_size);
 
+double            saft_stats_var_d2c        (SaftStatsContext *context,
+                                             unsigned int      query_size,
+                                             unsigned int      subject_size);
+
 double            saft_stats_var            (SaftStatsContext *context,
                                              unsigned int      query_size,
                                              unsigned int      subject_size);

@@ -254,6 +254,36 @@ saft_htable_d2 (SaftHTable *table)
   return d2;
 }
 
+double       
+saft_htable_d2c   (SaftHTable     *table,
+                   double         *letters_frequencies,
+                   double          query_size,
+                   double          subject_size)
+{
+  unsigned int i;
+  unsigned int j;
+  double d2c = 0.0;
+
+  for (i = 0; i < table->size; i++)
+    {
+      SaftHNode   *node;
+      SaftLetter  *letter_ptr;
+      double pw = 1.0;
+      for (node = table->table[i]; node; node = node->next)
+      {
+        if (node->count_query * node->count_subject != 0)
+        {
+          letter_ptr = node->seq - 1;
+          for (j = 0; j < table->word_size; j++)
+            pw *= letters_frequencies[*++letter_ptr - 1]; 
+          d2c += (node->count_query - query_size*pw) * (node->count_subject - subject_size*pw);
+        }
+      }
+    }
+
+  return d2c;
+}
+
 double
 saft_htable_d2dag (SaftHTable *table,
                    double     *letters_frequencies)

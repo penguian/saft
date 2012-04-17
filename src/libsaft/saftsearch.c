@@ -200,11 +200,16 @@ saft_search_add_subject (SaftSearch   *search,
       result->s_value      = saft_htable_d2 (search->htable);
       break;
     case SAFT_D2AST:
-      ;
-      double d2dag         = saft_htable_d2dag (search->htable, search->letters_frequencies);
-      double nA            = search->query->size;
-      double nB            = subject->size;
-      result->s_value      = (d2dag - nA * nB) / sqrt(nA * nB);
+      {
+        const double d2dag = saft_htable_d2dag (search->htable, search->letters_frequencies);
+        const double nA    = search->query->size;
+        const double nB    = subject->size;
+        result->s_value    = (d2dag - nA * nB) / sqrt(nA * nB);
+      }
+      break;
+    case SAFT_D2C:
+      result->s_value      = saft_htable_d2c (search->htable, search->letters_frequencies,
+                                              search->query->size, subject->size);
       break;
     case SAFT_D2DAG:  
       result->s_value      = saft_htable_d2dag (search->htable, search->letters_frequencies);
@@ -239,17 +244,52 @@ saft_search_compute_pvalues_d2 (SaftSearch *search)
   saft_stats_context_free (context);
 }
 
-#define var_d2ast(d,k) ( pow(d,k) + 1.0 - 2.0 * k + 2.0 * d * (pow(d,k-1) -1) / (d - 1) )
+void
+saft_search_compute_pvalues_d2c (SaftSearch *search)
+{
+  SaftStatsContext *context;
+  SaftResult       *result;
+  context = saft_stats_context_new (search->word_size,
+                                    search->letters_frequencies,
+                                    search->query->alphabet->size);
+
+  for (result = search->results; result; result = result->next)
+    {
+      const double mean = saft_stats_mean     (context,
+                                               search->query->size,
+                                               result->subject_size);
+      const double var  = saft_stats_var_d2c  (context,
+                                               search->query->size,
+                                               result->subject_size);
+      result->p_value   = saft_stats_pgamma_m_v (result->s_value + mean, mean, var);
+    }
+
+  saft_stats_context_free (context);
+}
+
+static
+double
+var_d2ast(const double d, const int k)
+{
+  return pow (d, k) + 1.0 - 2.0 * k + 2.0 * d * (pow (d, k - 1) - 1) / (d - 1);
+}
 
 void
 saft_search_compute_pvalues_d2ast (SaftSearch *search)
 {
   const double d  = search->query->alphabet->size;
   const double k  = search->word_size;
+  const double nA = search->query->size;
   SaftResult       *result;
 
   for (result = search->results; result; result = result->next)
-      result->p_value   = saft_stats_pgamma_m_v (result->s_value, 0.0, var_d2ast(d,k));
+    {
+      const double nB      = result->subject_size; 
+      const double mean    = nA * nB;
+      const double scaling = sqrt(mean);
+      const double var     = mean * var_d2ast(d,k);
+      result->p_value      = saft_stats_pgamma_m_v (scaling * result->s_value + mean, mean, var);
+    }
 }
 
 void
@@ -262,14 +302,12 @@ saft_search_compute_pvalues_d2dag (SaftSearch *search)
 
   for (result = search->results; result; result = result->next)
     {
-      const double nB = result->subject_size; 
+      const double nB   = result->subject_size; 
       const double mean = nA * nB;
       const double var  = mean * var_d2ast(d,k);
       result->p_value   = saft_stats_pgamma_m_v (result->s_value, mean, var);
     }
 }
-
-#undef var_d2ast
 
 void
 saft_search_compute_pvalues (SaftSearch *search)
@@ -281,6 +319,9 @@ saft_search_compute_pvalues (SaftSearch *search)
       break;
     case SAFT_D2AST:
       saft_search_compute_pvalues_d2ast (search);
+      break;
+    case SAFT_D2C:
+      saft_search_compute_pvalues_d2c (search);
       break;
     case SAFT_D2DAG:
       saft_search_compute_pvalues_d2dag (search);

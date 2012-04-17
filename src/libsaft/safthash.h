@@ -91,6 +91,11 @@ int           saft_htable_cmp            (SaftHTable     *table,
 
 double        saft_htable_d2             (SaftHTable     *table);
 
+double        saft_htable_d2c            (SaftHTable     *table,
+                                          double         *letters_frequencies,
+                                          double          query_size,
+                                          double          subject_size);
+
 double        saft_htable_d2dag          (SaftHTable     *table,
                                           double         *letters_frequencies);
 
