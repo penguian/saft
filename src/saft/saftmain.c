@@ -77,6 +77,8 @@ struct _SaftOptions
   int               show_max;
   SaftProgramType   program;
   SaftStatisticType statistic;
+  int              lockstep;
+  int              raw;
 };
 
 static SaftOptions* saft_options_new  (void);
@@ -101,28 +103,33 @@ static SaftOptDesc opt_desc[] =
     {"wordsize", required_argument, 'w', "Word size"},
     {"showmax",  required_argument, 'b', "Maximum number of results to show"},
     {"pmax",     required_argument, 'e', "Show results with a p-value smaller than this"},
+    {"lockstep", no_argument,       'l', "Step through query and subject in lock step"},
+    {"raw",      no_argument,       'r', "Show statistic results only - do not calculate p-values"},
     /* FIXME add option for the frequencies */
     /* FIXME add option to choose the strand(s) of the query */
     {NULL, 0, 0, NULL}
 };
 
-static struct option*     saft_main_get_options    (void);
+static struct option*     saft_main_get_options        (void);
 
-static void               saft_main_usage          (char        *argv0);
+static void               saft_main_usage              (char        *argv0);
 
-static void               saft_main_help           (char        *argv0);
+static void               saft_main_help               (char        *argv0);
 
-static void               saft_main_version        (void);
+static void               saft_main_version            (void);
 
-static SaftProgramType    saft_main_program_type   (char        *program);
+static SaftProgramType    saft_main_program_type       (char        *program);
 
-static SaftStatisticType  saft_main_statistic_type (char        *statistic);
+static SaftStatisticType  saft_main_statistic_type     (char        *statistic);
 
-static int                saft_main_search         (SaftOptions *options);
+static int                saft_main_search             (SaftOptions *options);
 
-static void               saft_main_write_search   (SaftOptions *options,
-                                                    SaftSearch  *search,
-                                                    FILE        *stream);
+static void               saft_main_write_search       (SaftOptions *options,
+                                                        SaftSearch  *search,
+                                                        FILE        *stream);
+static void               saft_main_write_search_raw   (SaftOptions *options,
+                                                        SaftSearch  *search,
+                                                        FILE        *stream);
 
 int
 main (int    argc,
@@ -132,6 +139,8 @@ main (int    argc,
   SaftOptions    *options      = saft_options_new ();
   int             ret          = 0;
   char           *endptr;
+  options->lockstep            = 0;
+  options->raw                 = 0;
 
   while (1)
     {
@@ -215,6 +224,12 @@ main (int    argc,
               saft_main_usage (argv[0]);
               ret = 1;
               goto cleanup;
+          case 'l':
+              options->lockstep = 1;
+              break;
+          case 'r':
+              options->raw = 1;
+              break;
         }
     }
   if (options->program == SAFT_UNKNOWN_PROGRAM)
@@ -399,17 +414,35 @@ saft_main_search (SaftOptions *options)
                                               options->word_size,
                                               SAFT_FREQ_UNIFORM,
                                               NULL);
-      for (j = 0; j < n_fasta_subjects; j++)
+      if (options->lockstep)
+        if (i == n_fasta_subjects)
+          break;
+        else
         {
-          SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[j],
+          SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[i],
                                                      alphabet);
           saft_search_add_subject (search, subject);
           saft_sequence_free (subject);
         }
-      saft_search_compute_pvalues (search);
-      saft_main_write_search (options,
-                              search,
-                              out_stream);
+      else
+        for (j = 0; j < n_fasta_subjects; j++)
+          {
+            SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[j],
+                                                       alphabet);
+            saft_search_add_subject (search, subject);
+            saft_sequence_free (subject);
+          }
+      if (options->raw)
+        saft_main_write_search_raw (options,
+                                    search,
+                                    out_stream);
+      else
+      {
+        saft_search_compute_pvalues (search);
+        saft_main_write_search (options,
+                                search,
+                                out_stream);
+      }
       saft_search_free (search);
     }
   if (options->output_path == NULL)
@@ -443,6 +476,34 @@ saft_main_write_search (SaftOptions *options,
                search->sorted_results[i]->s_value,
                search->sorted_results[i]->p_value_adj,
                search->sorted_results[i]->p_value);
+    }
+  if (i == 0)
+    fprintf (stream, "No hit found\n");
+}
+
+static void
+saft_main_write_search_raw (SaftOptions *options,
+                            SaftSearch  *search,
+                            FILE        *stream)
+{
+  unsigned int i;
+
+  if (options->show_max <= 0 ||
+      options->show_max > search->n_results)
+    options->show_max = search->n_results;
+
+  fprintf (stream, "Query: %s\n",
+           search->query->name);
+  SaftResult  *result = search->results;
+  for (i = 0;
+       result && (i < options->show_max);
+       i++)
+    {
+      fprintf (stream, "  Hit: %s %s: %11.1f\n",
+               result->name,
+               saft_statistic_names[search->statistic],
+               result->s_value);
+      result = result->next;
     }
   if (i == 0)
     fprintf (stream, "No hit found\n");
