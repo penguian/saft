@@ -149,7 +149,7 @@ main (int    argc,
 
       c = getopt_long (argc,
                        argv,
-                       "hV" "v" "i:d:o:" "p:s:w:b:e:",
+                       "hV" "v" "i:d:o:" "p:s:w:b:e:lr",
                        long_options,
                        &option_index);
       if (c == -1)
@@ -220,16 +220,16 @@ main (int    argc,
                   goto cleanup;
                 }
               break;
-          default:
-              saft_main_usage (argv[0]);
-              ret = 1;
-              goto cleanup;
           case 'l':
               options->lockstep = 1;
               break;
           case 'r':
               options->raw = 1;
               break;
+          default:
+              saft_main_usage (argv[0]);
+              ret = 1;
+              goto cleanup;
         }
     }
   if (options->program == SAFT_UNKNOWN_PROGRAM)
