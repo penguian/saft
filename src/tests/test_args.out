@@ -1,0 +1,413 @@
+
+saft
+[ERROR] Program type was not provided, use the `--program' or `-p' option.
+
+saft --help
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft -h
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --version
+SAFT version 0.0.1
+
+saft -V
+SAFT version 0.0.1
+
+saft --verbose
+[ERROR] Program type was not provided, use the `--program' or `-p' option.
+
+saft -v
+[ERROR] Program type was not provided, use the `--program' or `-p' option.
+
+saft --help --version
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --version --verbose
+SAFT version 0.0.1
+
+saft --verbose --help
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --help -V
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --version -v
+SAFT version 0.0.1
+
+saft --verbose -h
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --program saftn --input test_input.fna
+[ERROR] Couldn't open `(null)'.
+[ERROR] No subjects to process.
+
+saft --program saftn --database test_database.fna
+[ERROR] Couldn't open `(null)'.
+[ERROR] No queries to process.
+
+saft --program saftn --input --database test_database.fna
+[ERROR] Couldn't open `--database'.
+[ERROR] No queries to process.
+
+saft --program saftn --input test_input.fna --database
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option '--database' requires an argument
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input missing_file --database test_database.fna
+[ERROR] Couldn't open `missing_file'.
+[ERROR] No queries to process.
+
+saft --program saftn --input test_input.fna --database missing_file
+[ERROR] Couldn't open `missing_file'.
+[ERROR] No subjects to process.
+
+saft --program saftn --input test_input.fna --database test_database.fna
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftp --input test_input.faa --database test_database.faa
+Query: test : saft test input program: saftp word size: 3
+  Hit: acid4 : saft test amino database entry 4 d2:       100.0 adj.p.val: 3.33479e-40 p.val: 8.33698e-41
+  Hit: acid1 : saft test amino database entry 1 d2:         2.0 adj.p.val: 4.64015e-04 p.val: 2.32007e-04
+  Hit: acid3 : saft test amino database entry 3 d2:         2.0 adj.p.val: 8.82850e-04 p.val: 7.63113e-04
+  Hit: acid2 : saft test amino database entry 2 d2:         2.0 adj.p.val: 8.82850e-04 p.val: 8.82850e-04
+
+saft --program wrong --input test_input.fna --database test_database.fna
+[ERROR] Wrong `--program (-p)' argument: unknown program `wrong'.
+
+saft -p saftn -i test_input.fna -d test_database.fna
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft -p saftn -i test_input.fna -d test_database.faa
+Query: test : saft test input program: saftn word size: 7
+No hit found
+
+saft -p saftn -i test_input.faa -d test_database.fna
+Query: test : saft test input program: saftn word size: 7
+No hit found
+
+saft -p saftn -i test_input.faa -d test_database.faa
+Query: test : saft test input program: saftn word size: 7
+No hit found
+
+saft -p saftp -i test_input.fna -d test_database.fna
+Query: test : saft test input program: saftp word size: 3
+  Hit: base4 : saft test database entry 4 d2:      9402.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        50.0 adj.p.val: 3.09510e-23 p.val: 1.54755e-23
+  Hit: base1 : saft test database entry 1 d2:         8.0 adj.p.val: 8.64010e-07 p.val: 6.48007e-07
+
+saft -p saftp -i test_input.fna -d test_database.faa
+Query: test : saft test input program: saftp word size: 3
+No hit found
+
+saft -p saftp -i test_input.faa -d test_database.fna
+Query: test : saft test input program: saftp word size: 3
+No hit found
+
+saft -p saftp -i test_input.faa -d test_database.faa
+Query: test : saft test input program: saftp word size: 3
+  Hit: acid4 : saft test amino database entry 4 d2:       100.0 adj.p.val: 3.33479e-40 p.val: 8.33698e-41
+  Hit: acid1 : saft test amino database entry 1 d2:         2.0 adj.p.val: 4.64015e-04 p.val: 2.32007e-04
+  Hit: acid3 : saft test amino database entry 3 d2:         2.0 adj.p.val: 8.82850e-04 p.val: 7.63113e-04
+  Hit: acid2 : saft test amino database entry 2 d2:         2.0 adj.p.val: 8.82850e-04 p.val: 8.82850e-04
+
+saft --program saftn --input test_input.fna --database test_database.fna --help
+SAFT (Sequence Alignment Free Tool)
+Usage: lt-saft OPTIONS
+Where OPTIONS are:
+  --help      (-h) : Prints a short help
+  --version   (-V) : Prints the program's version
+  --verbose   (-v) : Increases the program's verbosity
+  --input     (-i) : Path to the input file
+  --database  (-d) : Path to the database to search
+  --output    (-o) : Path to the output file
+  --program   (-p) : Program to use
+  --statistic (-s) : Statistic to use (default d2)
+  --wordsize  (-w) : Word size
+  --showmax   (-b) : Maximum number of results to show
+  --pmax      (-e) : Show results with a p-value smaller than this
+  --lockstep  (-l) : Step through query and subject in lock step
+  --raw       (-r) : Show statistic results only - do not calculate p-values
+
+saft --program saftn --input test_input.fna --database test_database.fna --version
+SAFT version 0.0.1
+
+saft --program saftn --input test_input.fna --database test_database.fna --verbose
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option '--statistic' requires an argument
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna -s
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option requires an argument -- 's'
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic wrong
+[ERROR] Wrong `--statistic (-s)' argument: unknown statistic `wrong'.
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2ast
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2ast:    529588.8 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2ast:     26608.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2c
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2c:      6701.7 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2c:        26.0 adj.p.val: 1.95108e-10 p.val: 9.75538e-11
+  Hit: base1 : saft test database entry 1 d2c:         0.0 adj.p.val: 1.70329e-02 p.val: 1.27746e-02
+  Hit: base2 : saft test database entry 2 d2c:         0.0 adj.p.val: 2.84675e-02 p.val: 2.84675e-02
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2dag
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2dag: 109871104.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2dag:    425984.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2w
+[ERROR] Statistic not implemented: `d2w'.
+
+saft --program saftn --input test_input.fna --database test_database.fna --statistic d2wc
+[ERROR] Statistic not implemented: `d2wc'.
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option '--wordsize' requires an argument
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2:     10077.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        57.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2:        12.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic wrong
+[ERROR] Wrong `--statistic (-s)' argument: unknown statistic `wrong'.
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2:     10077.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        57.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2:        12.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2ast
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2ast:       570.1 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2ast:        41.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2ast:        16.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2c
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2c:      5542.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2c:        31.0 adj.p.val: 3.09595e-06 p.val: 1.54797e-06
+  Hit: base1 : saft test database entry 1 d2c:         6.8 adj.p.val: 1.68112e-02 p.val: 1.26084e-02
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2dag
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2dag:    161232.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2dag:       912.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2dag:       192.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2w
+[ERROR] Statistic not implemented: `d2w'.
+
+saft --program saftn --input test_input.fna --database test_database.fna --wordsize 2 --statistic d2wc
+[ERROR] Statistic not implemented: `d2wc'.
+
+saft --program saftn --input test_input.fna --database test_database.fna -w
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option requires an argument -- 'w'
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna -w 2
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2:     10077.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        57.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2:        12.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+
+saft --program saftn --input test_input.fna --database test_database.fna --showmax
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option '--showmax' requires an argument
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna --showmax 2
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna -b
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option requires an argument -- 'b'
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna -b 2
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+
+saft --program saftn --input test_input.fna --database test_database.fna --pmax
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option '--pmax' requires an argument
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna --pmax 1
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+  Hit: base2 : saft test database entry 2 d2:         0.0 adj.p.val: 1.00000e+00 p.val: 1.00000e+00
+  Hit: base1 : saft test database entry 1 d2:         0.0 adj.p.val: 1.00000e+00 p.val: 1.00000e+00
+
+saft --program saftn --input test_input.fna --database test_database.fna -e
+/home/leopardi/src/saft/git/working/src/saft/.libs/lt-saft: option requires an argument -- 'e'
+Usage: lt-saft OPTIONS
+Try lt-saft -h for help
+
+saft --program saftn --input test_input.fna --database test_database.fna -e 1
+Query: test : saft test input program: saftn word size: 7
+  Hit: base4 : saft test database entry 4 d2:      6706.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        26.0 adj.p.val: 1.94624e-10 p.val: 9.73118e-11
+  Hit: base2 : saft test database entry 2 d2:         0.0 adj.p.val: 1.00000e+00 p.val: 1.00000e+00
+  Hit: base1 : saft test database entry 1 d2:         0.0 adj.p.val: 1.00000e+00 p.val: 1.00000e+00
+
+saft --program saftn --input test_input.fna --database test_database.fna --lockstep
+Query: test : saft test input program: saftn word size: 7
+No hit found
+
+saft --program saftn --input test_input.fna --database test_database.fna -l
+Query: test : saft test input program: saftn word size: 7
+No hit found
+
+saft --program saftn --input test_input.fna --database test_database.fna --raw
+Query: test : saft test input
+  Hit: base4 : saft test database entry 4 d2:      6706.0
+  Hit: base3 : saft test database entry 3 d2:        26.0
+  Hit: base2 : saft test database entry 2 d2:         0.0
+  Hit: base1 : saft test database entry 1 d2:         0.0
+
+saft --program saftn --input test_input.fna --database test_database.fna -r
+Query: test : saft test input
+  Hit: base4 : saft test database entry 4 d2:      6706.0
+  Hit: base3 : saft test database entry 3 d2:        26.0
+  Hit: base2 : saft test database entry 2 d2:         0.0
+  Hit: base1 : saft test database entry 1 d2:         0.0
+
+saft --program saftn --input test_input.fna --database test_database.fna --pmax 1 --raw
+Query: test : saft test input
+  Hit: base4 : saft test database entry 4 d2:      6706.0
+  Hit: base3 : saft test database entry 3 d2:        26.0
+  Hit: base2 : saft test database entry 2 d2:         0.0
+  Hit: base1 : saft test database entry 1 d2:         0.0
+
+saft --program saftn --input test_input.fna --database test_database.fna --pmax 1 --lockstep
+Query: test : saft test input program: saftn word size: 7
+  Hit: base1 : saft test database entry 1 d2:         0.0 adj.p.val: 1.00000e+00 p.val: 1.00000e+00
+
+saft --program saftn --input test_input.fna --database test_database.fna --pmax 1 --wordsize 2
+Query: test : saft test input program: saftn word size: 2
+  Hit: base4 : saft test database entry 4 d2:     10077.0 adj.p.val: 0.00000e+00 p.val: 0.00000e+00
+  Hit: base3 : saft test database entry 3 d2:        57.0 adj.p.val: 1.22722e-08 p.val: 6.13611e-09
+  Hit: base1 : saft test database entry 1 d2:        12.0 adj.p.val: 7.91935e-03 p.val: 5.93951e-03
+  Hit: base2 : saft test database entry 2 d2:         8.0 adj.p.val: 7.75535e-01 p.val: 7.75535e-01
