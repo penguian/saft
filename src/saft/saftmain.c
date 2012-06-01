@@ -394,17 +394,27 @@ saft_main_search (SaftOptions *options)
   if (options->output_path == NULL)
     out_stream = stdout;
   else if ((out_stream = fopen (options->output_path, "w")) == NULL) 
-      {
-        saft_error ("Could not open output file");
-        return 1;
-      }
+    {
+      saft_error ("Could not open output file");
+      return 1;
+    }
   /* FIXME This requires loading the whole stuff into memory, probably not the
    * best thing to do if there are many queries or if the database is very big
    */
   fasta_queries  = saft_fasta_read (options->input_path,
                                     &n_fasta_queries);
+  if (n_fasta_queries == 0)
+    {
+      saft_error ("No queries to process");
+      return 1;
+    }
   fasta_subjects = saft_fasta_read (options->db_path,
                                     &n_fasta_subjects);
+  if (n_fasta_subjects == 0)
+    {
+      saft_error ("No subjects to process");
+      return 1;
+    }
   for (i = 0; i < n_fasta_queries; i++)
     {
       SaftSequence *query  = saft_fasta_to_seq (fasta_queries[i],

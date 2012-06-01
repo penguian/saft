@@ -340,14 +340,17 @@ saft_search_adjust_pvalues (SaftSearch *search)
 {
   int i;
 
-  saft_search_sort_results (search);
+  if (search->n_results)
+    {
+      saft_search_sort_results (search);
 
-  search->sorted_results[search->n_results - 1]->p_value_adj = search->sorted_results[search->n_results - 1]->p_value;
-  for (i = search->n_results - 2; i >= 0; i--)
-    search->sorted_results[i]->p_value_adj = saft_stats_BH_element (search->sorted_results[i]->p_value,
-                                                                    search->sorted_results[i + 1]->p_value_adj,
-                                                                    i,
-                                                                    search->n_results);
+      search->sorted_results[search->n_results - 1]->p_value_adj = search->sorted_results[search->n_results - 1]->p_value;
+      for (i = search->n_results - 2; i >= 0; i--)
+        search->sorted_results[i]->p_value_adj = saft_stats_BH_element (search->sorted_results[i]->p_value,
+                                                                        search->sorted_results[i + 1]->p_value_adj,
+                                                                        i,
+                                                                        search->n_results);
+    }
 }
 
 static void
