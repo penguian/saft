@@ -199,6 +199,22 @@ saft_sequence_to_string (SaftSequence *seq)
   return ret;
 }
 
+char*
+saft_sequence_letters_to_string (SaftLetter    *seq,
+                                 SaftAlphabet  *alphabet,
+                                 unsigned int   size)
+{
+  char*        ret;
+  unsigned int i;
+
+  ret = malloc ((size + 1) * sizeof (*ret));
+  for (i = 0; i < size; i++)
+    ret[i] = alphabet->letters[seq[i]];
+  ret[i] = '\0';
+
+  return ret;
+}
+
 /*************/
 /* Sequences */
 /*************/

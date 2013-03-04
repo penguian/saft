@@ -71,6 +71,7 @@ struct _SaftOptions
   char             *input_path;
   char             *db_path;
   char             *output_path;
+  int               use_spectrum;
   double            p_max;
   unsigned int      word_size;
   unsigned int      verbosity;
@@ -97,6 +98,7 @@ static SaftOptDesc opt_desc[] =
     {"input",    required_argument, 'i', "Path to the input file"},
     {"database", required_argument, 'd', "Path to the database to search"},
     {"output",   required_argument, 'o', "Path to the output file"},
+    {"spectrum", no_argument,       'k', "Input file is a k-mer spectrum"},
     /* Search setup */
     {"program",  required_argument, 'p', "Program to use"},
     {"statistic",required_argument, 's', "Statistic to use (default d2)"},
@@ -139,8 +141,6 @@ main (int    argc,
   SaftOptions    *options      = saft_options_new ();
   int             ret          = 0;
   char           *endptr;
-  options->lockstep            = 0;
-  options->raw                 = 0;
 
   while (1)
     {
@@ -149,7 +149,7 @@ main (int    argc,
 
       c = getopt_long (argc,
                        argv,
-                       "hV" "v" "i:d:o:" "p:s:w:b:e:lr",
+                       "hV" "v" "i:d:o:k" "p:s:w:b:e:lr",
                        long_options,
                        &option_index);
       if (c == -1)
@@ -174,6 +174,9 @@ main (int    argc,
               break;
           case 'o':
               options->output_path = optarg;
+              break;
+          case 'k':
+              options->use_spectrum = 1;
               break;
           case 'p':
               options->program = saft_main_program_type (optarg);
@@ -345,16 +348,19 @@ saft_options_new ()
 {
   SaftOptions *options;
 
-  options              = malloc (sizeof (*options));
-  options->input_path  = NULL;
-  options->db_path     = NULL;
-  options->output_path = NULL;
-  options->p_max       = 5e-2;
-  options->word_size   = 0;
-  options->verbosity   = 0;
-  options->show_max    = 50;
-  options->program     = SAFT_UNKNOWN_PROGRAM;
-  options->statistic   = SAFT_D2;
+  options               = malloc (sizeof (*options));
+  options->input_path   = NULL;
+  options->db_path      = NULL;
+  options->output_path  = NULL;
+  options->use_spectrum = 0;
+  options->p_max        = 5e-2;
+  options->word_size    = 0;
+  options->verbosity    = 0;
+  options->show_max     = 50;
+  options->program      = SAFT_UNKNOWN_PROGRAM;
+  options->statistic    = SAFT_D2;
+  options->lockstep     = 0;
+  options->raw          = 0;
 
   return options;
 }
@@ -370,7 +376,8 @@ static int
 saft_main_search (SaftOptions *options)
 {
   SaftAlphabet *alphabet;
-  SaftFasta   **fasta_queries;
+  SaftSpectrum *spec            = NULL;
+  SaftFasta   **fasta_queries   = NULL;
   SaftFasta   **fasta_subjects;
   FILE         *out_stream;
   unsigned int  n_fasta_queries;
@@ -401,13 +408,29 @@ saft_main_search (SaftOptions *options)
   /* FIXME This requires loading the whole stuff into memory, probably not the
    * best thing to do if there are many queries or if the database is very big
    */
-  fasta_queries  = saft_fasta_read (options->input_path,
-                                    &n_fasta_queries);
-  if (n_fasta_queries == 0)
+    
+  if (options->use_spectrum)
     {
-      saft_error ("No queries to process");
-      return 1;
+      spec = saft_spectrum_read (options->input_path, 
+                                 alphabet, 
+                                 options->word_size);
+      if (spec == NULL)
+        {
+          saft_error ("Could not read spectrum");
+          return 1;
+        }
     }
+  else
+    {
+      fasta_queries = saft_fasta_read (options->input_path,
+                                      &n_fasta_queries);
+      if (n_fasta_queries == 0)
+        {
+          saft_error ("No queries to process");
+          return 1;
+        }
+    }
+
   fasta_subjects = saft_fasta_read (options->db_path,
                                     &n_fasta_subjects);
   if (n_fasta_subjects == 0)
@@ -415,33 +438,18 @@ saft_main_search (SaftOptions *options)
       saft_error ("No subjects to process");
       return 1;
     }
-  for (i = 0; i < n_fasta_queries; i++)
+    
+  if (options->use_spectrum)
     {
-      SaftSequence *query  = saft_fasta_to_seq (fasta_queries[i],
-                                                alphabet);
-      SaftSearch   *search = saft_search_new (query,
-                                              options->statistic,
-                                              options->word_size,
-                                              SAFT_FREQ_UNIFORM,
-                                              NULL);
-      if (options->lockstep)
-        if (i == n_fasta_subjects)
-          break;
-        else
+      SaftSearch  *search = saft_search_new_spectrum (spec,
+                                                      options->statistic);
+      for (j = 0; j < n_fasta_subjects; j++)
         {
-          SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[i],
+          SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[j],
                                                      alphabet);
           saft_search_add_subject (search, subject);
           saft_sequence_free (subject);
         }
-      else
-        for (j = 0; j < n_fasta_subjects; j++)
-          {
-            SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[j],
-                                                       alphabet);
-            saft_search_add_subject (search, subject);
-            saft_sequence_free (subject);
-          }
       if (options->raw)
         saft_main_write_search_raw (options,
                                     search,
@@ -455,6 +463,47 @@ saft_main_search (SaftOptions *options)
       }
       saft_search_free (search);
     }
+  else
+    for (i = 0; i < n_fasta_queries; i++)
+      {
+        SaftSequence *query  = saft_fasta_to_seq (fasta_queries[i],
+                                                  alphabet);
+        SaftSearch   *search = saft_search_new_query (query,
+                                                      options->statistic,
+                                                      options->word_size,
+                                                      SAFT_FREQ_UNIFORM,
+                                                      NULL);
+        if (options->lockstep)
+          if (i == n_fasta_subjects)
+            break;
+          else
+          {
+            SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[i],
+                                                       alphabet);
+            saft_search_add_subject (search, subject);
+            saft_sequence_free (subject);
+          }
+        else
+          for (j = 0; j < n_fasta_subjects; j++)
+            {
+              SaftSequence *subject = saft_fasta_to_seq (fasta_subjects[j],
+                                                         alphabet);
+              saft_search_add_subject (search, subject);
+              saft_sequence_free (subject);
+            }
+        if (options->raw)
+          saft_main_write_search_raw (options,
+                                      search,
+                                      out_stream);
+        else
+        {
+          saft_search_compute_pvalues (search);
+          saft_main_write_search (options,
+                                  search,
+                                  out_stream);
+        }
+        saft_search_free (search);
+      }
   if (options->output_path == NULL)
     fclose (out_stream);
   return 0;
@@ -471,21 +520,32 @@ saft_main_write_search (SaftOptions *options,
       options->show_max > search->n_results)
     options->show_max = search->n_results;
 
-  fprintf (stream, "Query: %s program: %s word size: %d\n",
-           search->query->name,
-           saft_program_names[options->program],
-           search->word_size);
+  if (options->use_spectrum)
+    fprintf (stream, "Spectrum: program: %s word size: %d\n",
+             saft_program_names[options->program],
+             search->word_size);
+  else
+    fprintf (stream, "Query: %s program: %s word size: %d\n",
+             search->query->name,
+             saft_program_names[options->program],
+             search->word_size);
   for (i = 0;
        i < options->show_max &&
        search->sorted_results[i]->p_value_adj <= options->p_max;
        i++)
     {
-      fprintf (stream, "  Hit: %s %s: %11.1f adj.p.val: %.5e p.val: %.5e\n",
-               search->sorted_results[i]->name,
-               saft_statistic_names[search->statistic],
-               search->sorted_results[i]->s_value,
-               search->sorted_results[i]->p_value_adj,
-               search->sorted_results[i]->p_value);
+      if (options->use_spectrum)
+        fprintf (stream, "  Hit: %s %s: %.5e\n",
+                 search->sorted_results[i]->name,
+                 saft_statistic_names[search->statistic],
+                 search->sorted_results[i]->s_value);
+      else       
+         fprintf (stream, "  Hit: %s %s: %11.1f adj.p.val: %.5e p.val: %.5e\n",
+                  search->sorted_results[i]->name,
+                  saft_statistic_names[search->statistic],
+                  search->sorted_results[i]->s_value,
+                  search->sorted_results[i]->p_value_adj,
+                  search->sorted_results[i]->p_value);
     }
   if (i == 0)
     fprintf (stream, "No hit found\n");
@@ -502,17 +562,24 @@ saft_main_write_search_raw (SaftOptions *options,
       options->show_max > search->n_results)
     options->show_max = search->n_results;
 
-  fprintf (stream, "Query: %s\n",
-           search->query->name);
+  if (!(options->use_spectrum))
+    fprintf (stream, "Query: %s\n",
+             search->query->name);
   SaftResult  *result = search->results;
   for (i = 0;
        result && (i < options->show_max);
        i++)
     {
-      fprintf (stream, "  Hit: %s %s: %11.1f\n",
-               result->name,
-               saft_statistic_names[search->statistic],
-               result->s_value);
+      if (options->use_spectrum)
+        fprintf (stream, "  Hit: %s %s: %.5e\n",
+                 result->name,
+                 saft_statistic_names[search->statistic],
+                 result->s_value);
+      else
+        fprintf (stream, "  Hit: %s %s: %11.1f\n",
+                 result->name,
+                 saft_statistic_names[search->statistic],
+                 result->s_value);
       result = result->next;
     }
   if (i == 0)

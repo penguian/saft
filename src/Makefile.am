@@ -1,5 +1,6 @@
 SUBDIRS =		\
-	libsaft	\
+	libmmio		\
+	libsaft		\
 	tests		\
 	saft
 

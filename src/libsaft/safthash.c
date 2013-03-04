@@ -22,8 +22,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
 #include "safthash.h"
+#include "safterror.h"
 
 
 #define SAFT_HTABLE_SIZE 16384
@@ -98,6 +100,83 @@ saft_htable_free (SaftHTable *table)
         saft_hnode_free (table->table[i]);
       free (table->table);
       free (table);
+    }
+}
+
+void
+saft_htable_add_spectrum (SaftHTable   *table,
+                          SaftSpectrum *spec)
+{
+  SaftLetter   *word;
+  unsigned int i;
+  unsigned int hash = 0;
+  unsigned int hash_prefix = 0;
+  unsigned int idx;
+  unsigned int word_size = spec->word_size;
+  unsigned int alphabet_size = spec->alphabet->size;
+  char        *letters = spec->alphabet->letters;
+  unsigned int nrows = pow(alphabet_size, word_size - 1);
+  unsigned int ncols = alphabet_size;
+  
+  // for now, we assume that table->word_size == spec->word_size.
+  if (table->word_size != word_size)
+    {
+      saft_error ("Word size mismatch: table: %d, spectrum: %d", table->word_size, word_size);
+      exit(1);
+    }
+  if (spec->frequencies->nrows != nrows)
+    {
+      saft_error ("Mismatch in number of rows: spectrum: %d, calculated: %d", spec->frequencies->nrows, nrows);
+      exit(1);
+    }
+  if (spec->frequencies->ncols != ncols)
+    {
+      saft_error ("Mismatch in number of cols: spectrum: %d, calculated: %d", spec->frequencies->ncols, ncols);
+      exit(1);
+    }
+   
+  word = malloc(word_size * sizeof(SaftLetter));
+  
+  for (unsigned int row = 0; row != nrows; row++)
+    {
+      // Set prefix to be the sequence of letters corresponding to row.
+      unsigned int value = row;
+      unsigned int ch; 
+      hash_prefix = 0;
+      for (i = word_size - 2; i != -1; --i)
+        {
+          ch = value % alphabet_size + 1;
+          word[i] = ch;
+          value /= alphabet_size;
+          hash_prefix <<= table->shift;
+          hash_prefix ^= ch;
+        }
+      for (unsigned int col = 0; col != ncols; col++)
+        {
+          ch = col + 1;
+          word[word_size - 1] = ch;
+          hash = (hash_prefix << table->shift) ^ ch;
+          hash  &= table->hmask;
+          idx    = hash % SAFT_HTABLE_SIZE;
+
+          SaftHNode *node;
+
+          for (node = table->table[idx]; node; node = node->next)
+            if (saft_htable_cmp (table, node, word))
+              {
+                saft_error ("Word found in table: %.*s", 
+                            word_size, 
+                            saft_sequence_letters_to_string(word, spec->alphabet, word_size));
+                exit(1);
+              }
+          node               = saft_hnode_new ();
+          node->seq          = malloc(word_size * sizeof(SaftLetter));
+          for (i = 0; i != word_size; i++)
+            node->seq[i] = word[i];
+          node->count_query  = spec->frequencies->array[row][col];
+          node->next         = table->table[idx];
+          table->table[idx]  = node;
+        }
     }
 }
 
@@ -242,7 +321,7 @@ double
 saft_htable_d2 (SaftHTable *table)
 {
   unsigned int i;
-  unsigned int d2 = 0;
+  double d2 = 0.0;
 
   for (i = 0; i < table->size; i++)
     {

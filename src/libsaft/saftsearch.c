@@ -73,25 +73,63 @@ saft_result_free (SaftResult *result)
 /**********/
 
 SaftSearch*
-saft_search_new (SaftSequence *query,
-                 SaftStatisticType statistic,
+saft_search_new (SaftStatisticType statistic,
                  unsigned int  word_size,
-                 SaftFreqType  freq_type,
-                 const double *letters_frequencies)
+                 SaftFreqType  freq_type)
 {
   SaftSearch *search;
 
   search                      = malloc (sizeof (*search));
-  search->query               = query;
+  search->spectrum            = NULL;
+  search->query               = NULL;
+  search->alphabet            = NULL;
   search->statistic           = statistic;
   search->word_size           = word_size;
   search->freq_type           = freq_type;
-  search->htable              = saft_htable_new (query->alphabet, search->word_size);
-  search->letters_frequencies = malloc (query->alphabet->size * sizeof (*search->letters_frequencies));
-  search->letters_counts      = malloc (query->alphabet->size * sizeof (*search->letters_counts));
+  search->htable              = NULL;
+  search->letters_frequencies = NULL;
+  search->letters_counts      = NULL;
   search->results             = NULL;
   search->sorted_results      = NULL;
   search->n_results           = 0;
+
+  return search;
+}
+
+SaftSearch*
+saft_search_new_spectrum (SaftSpectrum *spec,
+                          SaftStatisticType statistic)
+{
+  SaftSearch *search = saft_search_new(statistic, spec->word_size, SAFT_FREQ_SPECTRUM);
+
+  search->spectrum            = spec;
+  search->alphabet            = spec->alphabet;
+  search->htable              = saft_htable_new (search->alphabet, search->word_size);
+  search->letters_frequencies = malloc (search->alphabet->size * sizeof (*search->letters_frequencies));
+  search->letters_counts      = malloc (search->alphabet->size * sizeof (*search->letters_counts));
+  search->results             = NULL;
+  
+  saft_htable_add_spectrum (search->htable, search->spectrum);
+
+  return search;
+}
+
+SaftSearch*
+saft_search_new_query (SaftSequence *query,
+                       SaftStatisticType statistic,
+                       unsigned int  word_size,
+                       SaftFreqType  freq_type,
+                       const double *letters_frequencies)
+{
+  SaftSearch *search = saft_search_new(statistic, word_size, freq_type);
+
+  search->query               = query;
+  search->alphabet            = query->alphabet;
+  search->htable              = saft_htable_new (search->alphabet, search->word_size);
+  search->letters_frequencies = malloc (search->alphabet->size * sizeof (*search->letters_frequencies));
+  search->letters_counts      = malloc (search->alphabet->size * sizeof (*search->letters_counts));
+  search->results             = NULL;
+  
   saft_htable_add_query (search->htable, search->query);
 
   if (search->freq_type == SAFT_FREQ_QUERY ||
@@ -113,14 +151,14 @@ saft_search_new (SaftSequence *query,
     {
       unsigned int i;
 
-      for (i = 0; i < query->alphabet->size; i++)
+      for (i = 0; i < search->alphabet->size; i++)
         search->letters_frequencies[i] = letters_frequencies[i];
     }
   else /* Assume uniform (SAFT_FREQ_UNIFORM) by default */
     {
       unsigned int i;
 
-      for (i = 0; i < query->alphabet->size; i++)
+      for (i = 0; i < search->alphabet->size; i++)
         search->letters_counts[i] = 1;
     }
 
@@ -134,6 +172,8 @@ saft_search_free (SaftSearch *search)
     {
       if (search->query)
         saft_sequence_free (search->query);
+      if (search->spectrum)
+        saft_spectrum_free (search->spectrum);
       if (search->htable)
         saft_htable_free (search->htable);
       if (search->letters_frequencies)
@@ -172,9 +212,9 @@ saft_search_compute_letters_counts_frequencies (SaftSearch   *search,
     {
       unsigned int total = 0;
 
-      for (i = 0; i < search->query->alphabet->size; i++)
+      for (i = 0; i < search->alphabet->size; i++)
         total += search->letters_counts[i];
-      for (i = 0; i < search->query->alphabet->size; i++)
+      for (i = 0; i < search->alphabet->size; i++)
         search->letters_frequencies[i] = ((double)search->letters_counts[i]) / total;
     }
 }
@@ -228,7 +268,7 @@ saft_search_compute_pvalues_d2 (SaftSearch *search)
   SaftResult       *result;
   context = saft_stats_context_new (search->word_size,
                                     search->letters_frequencies,
-                                    search->query->alphabet->size);
+                                    search->alphabet->size);
 
   for (result = search->results; result; result = result->next)
     {
@@ -251,7 +291,7 @@ saft_search_compute_pvalues_d2c (SaftSearch *search)
   SaftResult       *result;
   context = saft_stats_context_new (search->word_size,
                                     search->letters_frequencies,
-                                    search->query->alphabet->size);
+                                    search->alphabet->size);
 
   for (result = search->results; result; result = result->next)
     {
@@ -277,7 +317,7 @@ var_d2ast(const double d, const int k)
 void
 saft_search_compute_pvalues_d2ast (SaftSearch *search)
 {
-  const double d  = search->query->alphabet->size;
+  const double d  = search->alphabet->size;
   const double k  = search->word_size;
   const double nA = search->query->size;
   SaftResult       *result;
@@ -295,7 +335,7 @@ saft_search_compute_pvalues_d2ast (SaftSearch *search)
 void
 saft_search_compute_pvalues_d2dag (SaftSearch *search)
 {
-  const double d  = search->query->alphabet->size;
+  const double d  = search->alphabet->size;
   const double k  = search->word_size;
   const double nA = search->query->size;
   SaftResult       *result;

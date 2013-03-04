@@ -1,6 +1,8 @@
+libmmiodir = $(top_srcdir)/src/libmmio
 libsaftdir = $(top_srcdir)/src/libsaft
 
 INCLUDES =			\
+	-I$(libmmiodir) 	\
 	-I$(libsaftdir)
 
 AM_CPPFLAGS =			\
@@ -8,8 +10,9 @@ AM_CPPFLAGS =			\
 
 bin_PROGRAMS =	saft
 
-saft_LDADD =			\
-	$(libsaftdir)/libsaft.la
+saft_LDADD =				\
+	$(libsaftdir)/libsaft.la	\
+	$(libmmiodir)/libmmio.la
 
 saft_SOURCES =			\
 	saftmain.c

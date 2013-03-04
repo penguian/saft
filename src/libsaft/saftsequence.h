@@ -100,6 +100,10 @@ void          saft_sequence_free      (SaftSequence *seq);
 
 char*         saft_sequence_to_string (SaftSequence *seq);
 
+char*         saft_sequence_letters_to_string (SaftLetter    *seq,
+                                               SaftAlphabet  *alphabet,
+                                               unsigned int   size);
+
 /*************/
 /* Sequences */
 /*************/

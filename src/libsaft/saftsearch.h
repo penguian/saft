@@ -62,7 +62,8 @@ typedef enum
   SAFT_FREQ_SUBJECTS,
   SAFT_FREQ_QUERY_SUBJECTS,
   SAFT_FREQ_USER,
-  SAFT_FREQ_UNIFORM
+  SAFT_FREQ_UNIFORM,
+  SAFT_FREQ_SPECTRUM
 }
 SaftFreqType;
 
@@ -70,7 +71,9 @@ typedef struct _SaftSearch SaftSearch;
 
 struct _SaftSearch
 {
+  SaftSpectrum     *spectrum;
   SaftSequence     *query;
+  SaftAlphabet     *alphabet;
   SaftHTable       *htable;
   double           *letters_frequencies;
   unsigned int     *letters_counts;
@@ -82,11 +85,18 @@ struct _SaftSearch
   SaftFreqType      freq_type;
 };
 
-SaftSearch* saft_search_new             (SaftSequence     *query,
+SaftSearch* saft_search_new_spectrum    (SaftSpectrum     *spec,
+                                         SaftStatisticType statistic);
+
+SaftSearch* saft_search_new_query       (SaftSequence     *query,
                                          SaftStatisticType statistic,
                                          unsigned int      word_size,
                                          SaftFreqType      freq_type,
                                          const double     *letters_frequencies);
+
+SaftSearch* saft_search_new             (SaftStatisticType statistic,
+                                         unsigned int      word_size,
+                                         SaftFreqType      freq_type);
 
 void        saft_search_free            (SaftSearch       *search);
 

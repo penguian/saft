@@ -24,6 +24,7 @@
 
 
 #include <saftsequence.h>
+#include <saftspectrum.h>
 
 
 #ifdef __cplusplus
@@ -41,7 +42,7 @@ struct _SaftHNode
 {
   SaftHNode     *next;
   SaftLetter    *seq;
-  unsigned int   count_query;
+  double         count_query;
   unsigned int   count_subject;
 };
 
@@ -73,6 +74,9 @@ SaftHTable*   saft_htable_new            (SaftAlphabet   *alphabet,
 void          saft_htable_free           (SaftHTable     *table);
 
 void          saft_htable_clear          (SaftHTable     *table);
+
+void          saft_htable_add_spectrum   (SaftHTable     *table,
+                                          SaftSpectrum   *spec);
 
 void          saft_htable_add_query      (SaftHTable     *table,
                                           SaftSequence   *seq);
