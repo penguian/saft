@@ -23,6 +23,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 #include "safthash.h"
 #include "safterror.h"
@@ -65,6 +67,7 @@ saft_htable_new (SaftAlphabet *alphabet,
   SaftHTable *table;
 
   table            = malloc (sizeof (*table));
+  table->alphabet  = alphabet;
   table->size      = SAFT_HTABLE_SIZE; /* FIXME be more clever here */
   table->shift     = saft_get_high_bit (alphabet->size) + 1;
   table->table     = malloc (table->size * sizeof (*table->table));
@@ -148,19 +151,13 @@ saft_htable_add_spectrum (SaftHTable   *table,
           ch = value % alphabet_size + 1;
           word[i] = ch;
           value /= alphabet_size;
-          hash_prefix <<= table->shift;
-          hash_prefix ^= ch;
         }
       for (unsigned int col = 0; col != ncols; col++)
         {
           ch = col + 1;
           word[word_size - 1] = ch;
-          hash = (hash_prefix << table->shift) ^ ch;
-          hash  &= table->hmask;
-          idx    = hash % SAFT_HTABLE_SIZE;
-
+          idx = saft_htable_hash (table, word);
           SaftHNode *node;
-
           for (node = table->table[idx]; node; node = node->next)
             if (saft_htable_cmp (table, node, word))
               {
@@ -259,12 +256,23 @@ saft_htable_add_subject (SaftHTable   *table,
           hash  &= table->hmask;
           idx    = hash % SAFT_HTABLE_SIZE;
 
+          bool found = false;
           for (node = table->table[idx]; node; node = node->next)
             if (saft_htable_cmp (table, node, start))
               {
                 node->count_subject++;
+                found = true;
                 break;
               }
+          if (!found)
+            {
+              printf("Word not found in table: %.*s, index %5d, hash %5d\n", 
+                     table->word_size,
+                     saft_sequence_letters_to_string(start, table->alphabet, table->word_size),
+                     idx,
+                     saft_htable_hash (table, start)
+                    );
+            }
           ++i;
           ++start;
         }
