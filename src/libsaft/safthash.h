@@ -61,6 +61,7 @@ typedef struct _SaftHTable SaftHTable;
 struct _SaftHTable
 {
   SaftHNode    **table;
+  SaftAlphabet  *alphabet;
   unsigned int   shift;
   unsigned int   size;
   unsigned int   word_size;
