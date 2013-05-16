@@ -31,20 +31,20 @@
 SaftAlphabet SaftAlphabetDNA =
 {
   .name    = "DNA",
-  .letters = "NATGC",
+  .letters = "NACGT",
   .size    = 4,
   .codes   = 
     {
       ['N'] = 0,
       ['A'] = 1,
-      ['T'] = 2,
+      ['C'] = 2,
       ['G'] = 3,
-      ['C'] = 4,
+      ['T'] = 4,
       ['n'] = 0,
       ['a'] = 1,
-      ['t'] = 2,
+      ['c'] = 2,
       ['g'] = 3,
-      ['c'] = 4
+      ['t'] = 4
     }
 };
 
