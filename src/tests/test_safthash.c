@@ -18,6 +18,7 @@
  */
 
 #include <limits.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "test_harness.h"
@@ -30,32 +31,38 @@ test_saft_hash_generic ()
 {
   int error = 0;
   unsigned long returned_hash_value;
-  unsigned long hash_table_size;
+  size_t max_kmer_len = sizeof(unsigned long);
 
   SaftHashKmer kmer_zero;
-  kmer_zero.kmer_vall = 0UL;
+  kmer_zero.kmer_ptr = (unsigned char *) "";
   SaftHashKmer kmer_one;
-  kmer_one.kmer_vall = 1UL;
+  kmer_one.kmer_ptr = (unsigned char *) "1";
+  unsigned long max_value = ~0UL;
   SaftHashKmer kmer_max;
-  kmer_max.kmer_vall = ~0UL;
+  kmer_max.kmer_ptr = (unsigned char *) &max_value;
 
-  const SaftHashKmer *kmer_array[] = {&kmer_one, &kmer_max};
+  SaftHashKmer *kmer_array[] = {&kmer_one, &kmer_max, &kmer_zero};
   int kmer_array_len = sizeof(kmer_array)/sizeof(&kmer_zero);
 
-  for (int exponent = 0; exponent < 64; ++exponent)
+  for (int kmer_array_index = 0; kmer_array_index != kmer_array_len; ++kmer_array_index)
   {
-    hash_table_size = 1UL << exponent;
-    for (int kmer_array_index = 0; kmer_array_index != kmer_array_len; ++kmer_array_index)
+    SaftHashKmer* kmer = kmer_array[kmer_array_index];
+    returned_hash_value = saft_hash_generic(kmer, strnlen((const char *) kmer->kmer_ptr, max_kmer_len));
+    if (returned_hash_value == 0)
     {
-      returned_hash_value = saft_hash_generic(kmer_array[kmer_array_index], hash_table_size);
-      if (returned_hash_value >= hash_table_size)
+      error = 1;
+      if (options->verbosity)
       {
-        error = 1;
-        if (options->verbosity)
-        {
-          printf("test_saft_hash_generic: Kmer %d: Hash value %10lu too large for table %2d.\n",
-                 kmer_array_index, returned_hash_value, exponent);
-        }
+        printf("test_saft_hash_generic: Kmer %d: Returned hash value is 0.\n",
+               kmer_array_index);
+      }
+    }
+    else
+    {
+      if (options->verbosity)
+      {
+        printf("test_saft_hash_generic: Kmer %d: Returned hash value is 0x%016lx.\n",
+               kmer_array_index, returned_hash_value);
       }
     }
   }
