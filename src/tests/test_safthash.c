@@ -51,8 +51,11 @@ test_saft_hash_generic ()
       if (returned_hash_value >= hash_table_size)
       {
         error = 1;
-        printf("test_saft_hash_generic: Kmer %d: Hash value %10lu too large for table %2d.\n",
-               kmer_array_index, returned_hash_value, exponent);
+        if (options->verbosity)
+        {
+          printf("test_saft_hash_generic: Kmer %d: Hash value %10lu too large for table %2d.\n",
+                 kmer_array_index, returned_hash_value, exponent);
+        }
       }
     }
   }
@@ -153,8 +156,11 @@ test_saft_hash_table_new ()
     if (hash_table_ptr == NULL)
     {
       error = 1;
-      printf("test_saft_hash_table_new: size %10lu failed.\n",
-             hash_table_size);
+      if (options->verbosity)
+      {
+        printf("test_saft_hash_table_new: size %10lu failed.\n",
+               hash_table_size);
+      }
     }
     else
     {
