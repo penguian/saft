@@ -25,9 +25,7 @@
 #include "test_harness.h"
 #include "saftsearch.h"
 
-/******************/
-/* Search Options */
-/******************/
+static TestOptions* options;
 
 int
 test_saft_options_new ()
@@ -43,11 +41,6 @@ test_saft_options_free ()
   return error;
 }
 
-
-/**********/
-/* Result */
-/**********/
-
 int
 test_saft_result_new ()
 {
@@ -61,10 +54,6 @@ test_saft_result_free ()
   int error = 0;
   return error;
 }
-
-/**********/
-/* Search */
-/**********/
 
 int
 test_saft_search_new ()
@@ -129,10 +118,6 @@ test_results_heap_sort ()
   return error;
 }
 
-/********************/
-/* SaftSearchEngine */
-/********************/
-
 int
 test_saft_search_engine_new ()
 {
@@ -162,8 +147,7 @@ test_saft_search_all ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_options_new, "test_saft_options_new");
@@ -183,6 +167,24 @@ main (int    argc,
   error |= run_test(test_saft_search_engine_free, "test_saft_search_engine_free");
   error |= run_test(test_saft_search_two_sequences, "test_saft_search_two_sequences");
   error |= run_test(test_saft_search_all, "test_saft_search_all");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

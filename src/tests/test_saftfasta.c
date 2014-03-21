@@ -24,6 +24,8 @@
 #include "test_harness.h"
 #include "saftfasta.h"
 
+static TestOptions* options;
+
 int
 test_saft_fasta_read ()
 {
@@ -46,13 +48,30 @@ test_saft_fasta_iter ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_fasta_read, "test_saft_fasta_read");
   error |= run_test(test_saft_fasta_append, "test_saft_fasta_append");
   error |= run_test(test_saft_fasta_iter, "test_saft_fasta_iter");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

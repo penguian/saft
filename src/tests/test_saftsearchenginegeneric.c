@@ -24,9 +24,7 @@
 #include "test_harness.h"
 #include "saftsearchengines.h"
 
-/*************************/
-/* Generic Search Engine */
-/*************************/
+static TestOptions* options;
 
 int
 test_saft_search_engine_generic_new ()
@@ -50,13 +48,30 @@ test_search_engine_generic_search_all ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_search_engine_generic_new, "test_saft_search_engine_generic_new");
   error |= run_test(test_search_engine_generic_search_two_sequences, "test_search_engine_generic_search_two_sequences");
   error |= run_test(test_search_engine_generic_search_all, "test_search_engine_generic_search_all");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

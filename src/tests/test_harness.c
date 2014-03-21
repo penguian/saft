@@ -17,12 +17,93 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
+#include <getopt.h>
 #include <stdio.h>
 
+#include "saftopt.h"
 #include "test_harness.h"
 
+static SaftOptDesc opt_desc[] =
+{
+    /* Program information */
+    {"help",        no_argument,       'h', "Prints a short help"},
+    /* General options */
+    {"verbose",     no_argument,       'v', "Increases the program's verbosity"},
+
+    {NULL, 0, 0, NULL}
+};
+
+TestOptions*
+new_test_options ()
+{
+  TestOptions *options;
+
+  options                               = malloc (sizeof (*options));
+  options->verbosity                    = 0;
+
+  return options;
+}
+
+TestOptions*
+get_test_options (int    argc,
+                  char **argv)
+{
+  struct option  *long_options = saft_opt_get_options (opt_desc);
+  TestOptions    *options      = new_test_options ();
+  int             cleanup      = 0;
+  char           *optstring;
+
+  optstring = saft_opt_get_optstring (opt_desc);
+  while (1)
+    {
+      int option_index = 0;
+      int c;
+
+      c = getopt_long (argc,
+                       argv,
+                       optstring,
+                       long_options,
+                       &option_index);
+      if (c == -1)
+        break;
+
+      switch (c)
+        {
+          case 'h':
+              saft_opt_help (argv[0],
+                             opt_desc,
+                             "SAFT (Sequence Alignment Free Tool)");
+              cleanup = 1;
+              break;
+          case 'v':
+              options->verbosity++;
+              break;
+          default:
+              saft_opt_usage (argv[0]);
+              cleanup = 1;
+        }
+    }
+
+  free (optstring);
+  free (long_options);
+
+  if (cleanup)
+  {
+    free_test_options (options);
+    options = NULL;
+  }
+  return options;
+}
+
+void
+free_test_options (TestOptions* options)
+{
+  free (options);
+}
+
 int
-run_test(int (*test_function)(), char *test_name)
+run_test (int (*test_function)(), char *test_name)
 {
   int test_error = (*test_function)();
   printf("%s: %s\n", test_name, test_error ?  "failure" : "success");

@@ -1,5 +1,6 @@
-/* saftsearchengines.c
+/* saftopt.h
  * Copyright (C) 2008  Sylvain FORET
+ * Copyright (C) 2014  Paul LEOPARDI
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,37 +20,39 @@
  *
  */
 
-#include <stdio.h>
+#ifndef __SAFTOPT_H__
+#define __SAFTOPT_H__
 
-#include "test_harness.h"
-#include "saftsearchengines.h"
-
-static TestOptions* options;
-
-int
-run_all_tests ()
+#ifdef __cplusplus
+extern "C"
 {
-  int error = 0;
-  return error;
-}
+#endif
 
-int
-main (int    argc,
-      char **argv)
+typedef struct _SaftOptDesc SaftOptDesc;
+
+struct _SaftOptDesc
 {
-  int error;
-  options = get_test_options(argc, argv);
-  if (options != NULL)
-  {
-    error = run_all_tests();
-    free_test_options(options);
-  }
-  else
-  {
-    error = 1;
-  }
-  return error;
+  char *name;
+  int   has_arg;
+  int   val;
+  char *description;
+};
+
+struct option*   saft_opt_get_options   (SaftOptDesc *opt_desc);
+
+char*            saft_opt_get_optstring (SaftOptDesc *opt_desc);
+
+void             saft_opt_usage         (char        *argv0);
+
+void             saft_opt_help          (char        *argv0,
+                                         SaftOptDesc *opt_desc,
+                                         char        *message);
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* __SAFTOPT_H__ */
 
 /* vim:ft=c:expandtab:sw=4:ts=4:sts=4:cinoptions={.5s^-2n-2(0:
  */

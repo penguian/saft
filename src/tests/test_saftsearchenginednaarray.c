@@ -24,6 +24,8 @@
 #include "test_harness.h"
 #include "saftsearchengines.h"
 
+static TestOptions* options;
+
 int
 test_saft_search_engine_dna_array_new ()
 {
@@ -165,8 +167,7 @@ test_dna_array_db_entry_free_all ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_search_engine_dna_array_new, "test_saft_search_engine_dna_array_new");
@@ -189,6 +190,24 @@ main (int    argc,
   error |= run_test(test_dna_array_db_entry_new, "test_dna_array_db_entry_new");
   error |= run_test(test_dna_array_db_entry_free, "test_dna_array_db_entry_free");
   error |= run_test(test_dna_array_db_entry_free_all, "test_dna_array_db_entry_free_all");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

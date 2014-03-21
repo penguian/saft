@@ -24,6 +24,8 @@
 #include "test_harness.h"
 #include "safterror.h"
 
+static TestOptions* options;
+
 int
 test_saft_set_error_handler ()
 {
@@ -46,13 +48,30 @@ test_saft_error_handler_default ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_set_error_handler, "test_saft_set_error_handler");
   error |= run_test(test_saft_error, "test_saft_error");
   error |= run_test(test_saft_error_handler_default, "test_saft_error_handler_default");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

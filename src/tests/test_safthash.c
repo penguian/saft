@@ -23,6 +23,8 @@
 #include "test_harness.h"
 #include "safthash.h"
 
+static TestOptions* options;
+
 int
 test_saft_hash_generic ()
 {
@@ -213,8 +215,7 @@ test_saft_hash_table_lookup_or_create ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_hash_generic, "test_saft_hash_generic");
@@ -237,6 +238,24 @@ main (int    argc,
   error |= run_test(test_saft_hash_table_increment, "test_saft_hash_table_increment");
   error |= run_test(test_saft_hash_table_add_count, "test_saft_hash_table_add_count");
   error |= run_test(test_saft_hash_table_lookup_or_create, "test_saft_hash_table_lookup_or_create");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

@@ -24,9 +24,7 @@
 #include "test_harness.h"
 #include "saftsequence.h"
 
-/************/
-/* Alphabet */
-/************/
+static TestOptions* options;
 
 int
 test_saft_alphabet_new ()
@@ -41,10 +39,6 @@ test_saft_alphabet_free ()
   int error = 0;
   return error;
 }
-
-/************/
-/* Sequence */
-/************/
 
 int
 test_saft_sequence_new ()
@@ -68,8 +62,7 @@ test_saft_sequence_copy ()
 }
 
 int
-main (int    argc,
-      char **argv)
+run_all_tests ()
 {
   int error = 0;
   error |= run_test(test_saft_alphabet_new, "test_saft_alphabet_new");
@@ -77,6 +70,24 @@ main (int    argc,
   error |= run_test(test_saft_sequence_new, "test_saft_sequence_new");
   error |= run_test(test_saft_sequence_free, "test_saft_sequence_free");
   error |= run_test(test_saft_sequence_copy, "test_saft_sequence_copy");
+  return error;
+}
+
+int
+main (int    argc,
+      char **argv)
+{
+  int error;
+  options = get_test_options(argc, argv);
+  if (options != NULL)
+  {
+    error = run_all_tests();
+    free_test_options(options);
+  }
+  else
+  {
+    error = 1;
+  }
   return error;
 }
 

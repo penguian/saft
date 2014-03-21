@@ -17,8 +17,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-int
-run_test(int (*test_function)(), char *test_name);
+typedef struct _TestOptions TestOptions;
+
+struct _TestOptions
+{
+  unsigned int    verbosity;
+};
+
+TestOptions* new_test_options  (void);
+
+TestOptions* get_test_options  (int    argc,
+                                char **argv);
+
+void         free_test_options (TestOptions* options);
+
+int          run_test          (int (*test_function)(), char *test_name);
 
 /* vim:ft=c:expandtab:sw=4:ts=4:sts=4:cinoptions={.5s^-2n-2(0:
  */
